@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+    <h1 style="color:brown; text-align: center;"><ul>Addition/Multiplication Form</h1>
+<head>
+<script>
+function add(){
+var a,b,c,d;
+a=Number(document.getElementById("first").value);
+b=Number(document.getElementById("second").value);
+c=Number(document.getElementById("third").value);
+
+d= a + b + c;
+document.getElementById("answer").value= d;
+}
+function mul(){
+a=Number(document.getElementById("first").value);
+b=Number(document.getElementById("second").value);
+c=Number(document.getElementById("third").value);
+d= a * b * c;
+document.getElementById("answer1").value= d;
+
+}
+
+</script>
+</head>
+<body>
+ <table border="2" align="center" bgcolor="grey"> 
+ <tr>
+     <td> Enter the First number : <input id="first"></td>
+ </tr>
+  <tr>
+    <td> Enter the Second number : <input id="second"></td>
+  </tr>
+  <tr>
+     <td> Enter the Third number : <input id="third"></td>    
+  </tr>
+
+  <tr>
+     <td><button onclick="add()">Addition</button>
+        <input id="answer">
+        <button onclick="mul()">Multiply</button>
+        <input id="answer1"></td>
+    </tr>
+</table>
+</body>
+</html>
