@@ -1,0 +1,408 @@
+﻿
+@{
+    ViewBag.Title = "SurveyReports_N";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@{ if (Session["username"] == null) { Response.Redirect("~/Login/Index"); }}
+<style>
+    .reportA {
+        display: none;
+    }
+
+    #ReprtTble, #ReprtTble td, #ReprtTble th {
+        border: solid 1px #808080;
+        text-align: center;
+    }
+</style>
+<div class="">
+    <div class="col-md-12 pt-3">
+        <h2>School/ Anganwadi Survey Report A/ B</h2>
+    </div>
+    <div class="clear"></div>
+</div>
+<div class="row" style="margin:0">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>District</label>
+                            <select class="form-control" id="DistrictList" onchange="blocklist()">
+                                <option value="0">Please select</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Block</label>
+                            <select class="form-control" id="BlockList" onchange="villagelist()">
+                                <option value="0">Please select</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>School/ Anganwadi</label>
+                            <select class="form-control" id="ScholAngnwdiList">
+                                <option value="0">Please select</option>
+                                <option selected>School</option>
+                                <option>Anganwadi</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>From Date</label>
+                            <input type="date" class="form-control" id="fromDate" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>To Date</label>
+                            <input type="date" class="form-control" id="toDate" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <br />
+                        <button class="btn btn-success btn-sm" id="getReport">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="card mt-2">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="pdfReport" border="0">
+                        <tr>
+                            <td>
+                                <div class="schlhead pb-1" style="font-size:17px; display:none">
+                                    <span class="repfrmA">Varification of State Rural School Piped water Supply by TPI Under 100 days Mission,constructed by UPPCL <span class="text-red">Format A </span></span>
+                                    <span class="repfrmB" style="display:none">Varification of State Rural School Piped water Supply by TPI Under 100 days Mission,constructed by UPPCL <span class="text-red">Format B </span></span>
+                                </div>
+                                <div class="agnwdihead pb-1" style="font-size:17px; display:none">
+                                    <span class="repfrmA">Varification of State Anganwadi Piped water Supply by TPI Under 100 days Mission,constructed by UPPCL <span class="text-red">Format A  </span></span>
+                                    <span class="repfrmB" style="display:none">Varification of State Anganwadi Piped water Supply by TPI Under 100 days Mission,constructed by UPPCL <span class="text-red">Format B </span>
+                                </div>
+
+                                <table width="100%" border="1" cellspacing="0" cellpadding="0" id="ReprtTble" class="table table-bordered table-striped table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th width="5%">S.&nbsp;N.</th>
+                                            <th style="display:none;" id="filenam"> Block</th>
+                                            <th>District </th>
+                                            <th>Block</th>
+                                            <th>Panchayat</th>
+                                            <th>Village</th>
+                                            <th class="schlcol">Name of School</th>
+                                            <th class="schlcol">School UDISE&nbsp;Code</th>
+                                            <th class="agnwdicol">Anganwadi Name</th>
+                                            <th class="agnwdicol">Anganwadi Centre</th>
+                                            <th class="reportA">Availablity of Piped Drinking water</th>
+                                            <th>Availablity of HandPump</th>
+                                            <th>Availablity of Electricity</th>
+                                            <th class="reportB">Piped water before 100 days mission</th>
+                                            <th class="reportB">Implementation Agency</th>
+                                            <th class="reportB">Supply scheme</th>
+                                            <th>Approve by BOQ</th>
+                                            <th class="reportB">Inspection Date</th>
+                                            <th style="display:none;"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="survyData"></tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="row mt-3" id="reportbox" style="display:none;">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Report Type</label>
+                            <select class="form-control" id="reportType">
+                                <option value="0">Please select</option>
+                                <option value="1" selected>Format A</option>
+                                <option value="2">Format B</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <br />
+                        <button class="btn btn-success btn-sm" id="genratReport" onclick="fnExcelReport()">Generate Report</button> &nbsp; <button class="btn btn-info btn-sm" id="printMe" onclick="printDiv()">Print Report</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+</div>
+
+<script>
+    $(document).ready(function () {
+       // $("#aa-preloader-area").show();
+        $.ajax({
+            url: "@Url.Action("getDistrictList", "SchoolSurvey")",
+            method: 'post',
+            dataType: 'json',
+            data: '',
+            success: function (response) {
+                var ListValue = "";
+                ListValue += "<option value='0'>Please select</option>";
+                $("#DistrictList").empty();
+                for (i = 0; i < response.length; ++i) {
+                    ListValue += "<option value=" + response[i].District_id + ">" + response[i].District_name + "</option>";
+                }
+                $("#aa-preloader-area").hide();
+                $("#DistrictList").append(ListValue);
+            }
+        });
+    });
+    function blocklist() {
+        if (dl == null) { var dl = $("#DistrictList").val(); }
+        var Data = { District_id: dl }
+        $("#aa-preloader-area").show();
+        $.ajax({
+            url: "@Url.Action("getBlockList", "Master")",
+            method: 'post',
+            dataType: 'json',
+            data: Data,
+            success: function (response) {
+                var ListValue = "";
+                ListValue += "<option value='0'>Please select</option>";
+                $("#BlockList").empty();
+                for (i = 0; i < response.length; ++i) {
+                    ListValue += "<option value=" + response[i].Block_id + ">" + response[i].Block_name + "</option>";
+                }
+                $("#aa-preloader-area").hide();
+                $("#BlockList").append(ListValue);
+            }
+        });
+    };
+    function villagelist() {
+        if (Bl == null) { var Bl = $("#BlockList").val(); }
+        var Data = { Block_id: Bl };
+        $("#aa-preloader-area").show();
+        $.ajax({
+            url: "@Url.Action("getVillagetList", "SchoolSurvey")",
+            method: 'post',
+            dataType: 'json',
+            data: Data,
+            success: function (response) {
+                var ListValue = "";
+                ListValue += "<option value='0'>Please select</option>";
+                $("#VillageList").empty();
+                for (i = 0; i < response.length; ++i) {
+                    ListValue += "<option value=" + response[i].Village_id + ">" + response[i].Village_name + "</option>";
+                }
+                $("#aa-preloader-area").hide();
+                $("#VillageList").append(ListValue);
+            }
+        });
+    };
+</script>
+<script>
+    $("#getReport").on("click", function () {
+        var res = validate();
+        if (res == false) {
+            return false;
+        };
+        getRpt();
+    });
+    getRpt();
+    function getRpt() {
+        $("#aa-preloader-area").show();
+        var dTable = $('#ReprtTble').DataTable();
+        dTable.draw().clear();
+        dTable.destroy();
+        Data = {
+            District_id: $("#DistrictList").val(),
+            Block_id: $("#BlockList").val(),
+            Village_id: $("#VillageList").val(),
+            verification_State: $("#ScholAngnwdiList").val(),
+            fromDate: $("#fromDate").val(),
+            toDate: $("#toDate").val() + ' 23:59:59'
+        }
+        $.ajax({
+            async: false,
+            type: 'Post',
+            url: "@Url.Action("getSchoolReport_N", "SchoolSurvey")",
+            dataType: 'json',
+            data: Data,
+            success: function (response) {
+                console.log(response);
+                var html = '';
+                var sr = 1; var shcol = '';
+                $("#survyData").empty();
+                $.each(response, function (key, item) {
+                    html += '<tr>';
+                    html += '<td>' + sr + '</td>';
+                    html += '<td style="display:none;">' + item.Ssurvey_id + '</td>';
+                    html += '<td>' + item.District_name + '</td>';
+                    html += '<td>' + item.Block_name + '</td>';
+                    html += '<td>' + item.Panchayat_name + '</td>';
+                    html += '<td>' + item.Village_name + '</td>';
+                    html += '<td class="schlcol">' + item.School_name + '</td>';
+                    html += '<td class="schlcol">' + item.school_Code + '</td>';
+                    html += '<td class="agnwdicol">' + item.Anganwadi_name + '</td>';
+                    html += '<td class="agnwdicol">' + item.anganwadi_Centre + '</td>';
+                    html += '<td class="reportA">' + item.PipeWater_Avail + '</td>';
+                    html += '<td>' + item.HP_Avail + '</td>';
+                    html += '<td>' + item.Electricity_Avail + '</td>';
+                    html += '<td class="reportB">' + item.PipeWater_Avail + '</td>';
+                    html += '<td class="reportB">' + item.Implmnt_agency + '</td>';
+                    html += '<td class="reportB">' + item.Supply_scheme + '</td>';
+                    if (item.Status != ""){
+                        html += '<td> Yes </td>';
+                    } else {
+                        html += '<td style="color:#ff6c00"> No </td>';
+                    }
+                    var survydt = item.dateOfInstallation.substring(0, 10);
+                    html += '<td class="reportB" nowrap>' + survydt + '</td>';
+                    if (item.School_id != 0) {
+                        html += '<td style="display:none;">' + item.School_id + '</td>';
+                    } else { html += '<td style="display:none;">' + item.anganwadi_ID + '</td>'; }
+                    html += '</tr>';
+                    sr++;
+                    shcol = item.School_id;
+                });
+                $("#survyData").html(html);
+                var $tbl = $("#ReprtTble");
+                if (shcol != 0) {
+                    var colToHide = $tbl.find(".agnwdicol");
+                    var colToHide1 = $tbl.find(".schlcol");
+                    var scholheading = $(".schlhead");
+                    var Angnheading = $(".agnwdihead");
+                    $(colToHide).hide();
+                    $(colToHide1).show();
+                    $(scholheading).show();
+                    $(Angnheading).hide();
+                } else {
+                    var colToHide1 = $tbl.find(".schlcol");
+                    var colToHide = $tbl.find(".agnwdicol");
+                    var scholheading = $(".schlhead");
+                    var Angnheading = $(".agnwdihead");
+                    $(colToHide1).hide();
+                    $(colToHide).show();
+                    $(scholheading).hide();
+                    $(Angnheading).show();
+                }
+                $("#reportbox").show();
+                $('#ReprtTble').DataTable({
+                    "paging": false,
+                    "lengthChange": true,
+                    "searching": true,
+                    "ordering": true,
+                });
+                $("#aa-preloader-area").hide();
+            }
+        });
+    }
+
+</script>
+<script>
+    ///validations
+    function validate() {
+        //if ($('#DistrictList').val() == "0") {
+        //    alert('Please select District!');
+        //    $('#DistrictList').focus();
+        //    $('#DistrictList').css('border-color', 'red');
+        //    isValid = false;
+        //    return false;
+        //} else { $('#DistrictList').css('border-color', ''); }
+
+        if ($('#ScholAngnwdiList').val() == "0") {
+            alert('Please select School/ Anganwadi!');
+            $('#ScholAngnwdiList').focus();
+            $('#ScholAngnwdiList').css('border-color', 'red');
+            isValid = false;
+            return false;
+        } else { $('#ScholAngnwdiList').css('border-color', ''); }
+    }
+</script>
+<script>
+    $("#reportType").on("change", function () {
+        var $tbl = $("#ReprtTble");
+        var reprt = $("#reportType").val();
+        var repfrmA = $("#pdfReport").find(".repfrmA");
+        var repfrmB = $("#pdfReport").find(".repfrmB");
+        var colToHide = $tbl.find(".reportA");
+        var colToHide1 = $tbl.find(".reportB");
+        if (reprt == 2) {
+            $(colToHide).show();
+            $(colToHide1).hide();
+            $(repfrmA).hide();
+            $(repfrmB).show();
+        } else {
+            $(colToHide).hide();
+            $(colToHide1).show();
+            $(repfrmA).show();
+            $(repfrmB).hide();
+        }
+    });
+    $("#genratReport").on("click", function () {
+        if ($('#reportType').val() == "0") {
+            alert('Please select Report Format!');
+            $('#reportType').focus();
+            $('#reportType').css('border-color', 'red');
+            isValid = false;
+            return false;
+        } else { $('#reportType').css('border-color', ''); }
+
+        getPDF();
+    });
+
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+<script type="text/javascript" src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
+<script>
+    function fnExcelReport() {
+        var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+        var textRange; var j = 0;
+        tab = document.getElementById('ReprtTble'); // id of table
+
+        for (j = 0 ; j < tab.rows.length ; j++) {
+            tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            //tab_text=tab_text+"</tr>";
+        }
+
+        tab_text = tab_text + "</table>";
+        tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, "");//remove if u want links in your table
+        tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+        tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+        var ua = window.navigator.userAgent;
+        var msie = ua.indexOf("MSIE ");
+
+        if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))      // If Internet Explorer
+        {
+            txtArea1.document.open("txt/html", "replace");
+            txtArea1.document.write(tab_text);
+            txtArea1.document.close();
+            txtArea1.focus();
+            sa = txtArea1.document.execCommand("SaveAs", true, "Say Thanks");
+        }
+        else                 //other browser not tested on IE 11
+            sa = window.open('data:application/vnd.ms-excel,' + encodeURIComponent(tab_text));
+
+        return (sa);
+    }
+    function printDiv() {
+        var divToPrint = document.getElementById('pdfReport');
+        var newWin = window.open('', 'Print-Window');
+        newWin.document.open();
+        newWin.document.write('<html><body onload="window.print()">' + divToPrint.innerHTML + '</body></html>');
+        newWin.document.close();
+        setTimeout(function () { newWin.close(); }, 10);
+    }
+    var field = document.querySelector('#fromDate');
+    var field1 = document.querySelector('#toDate');
+    var date = new Date();
+    // Set the date
+    field.value = date.getFullYear().toString() + '-' + (date.getMonth() + 1).toString().padStart(2, 0) +
+        '-' + date.getDate().toString().padStart(2, 0);
+    field1.value = date.getFullYear().toString() + '-' + (date.getMonth() + 1).toString().padStart(2, 0) +
+        '-' + date.getDate().toString().padStart(2, 0);
+</script>
+

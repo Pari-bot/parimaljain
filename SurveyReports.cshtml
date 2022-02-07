@@ -1,0 +1,558 @@
+﻿
+@{
+    ViewBag.Title = "SurveyReports";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@{ if (Session["username"] == null) { Response.Redirect("~/Login/Index"); }}
+<div class="">
+    <div class="col-md-12 pt-3">
+        <h2>School/ Anganwadi Survey Reports</h2>
+    </div>
+    <div class="clear"></div>
+</div>
+<div class="row" style="margin:0">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>District</label>
+                            <select class="form-control" id="DistrictList" onchange="blocklist()">
+                                <option value="0">Please select</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Block</label>
+                            <select class="form-control" id="BlockList" onchange="villagelist()">
+                                <option value="0">Please select</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Village/ Panchayat</label>
+                            <select class="form-control" id="VillageList">
+                                <option value="0">Please select</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>From Date</label>
+                            <input type="date" class="form-control" id="fromDate" />
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>From Date</label>
+                            <input type="date" class="form-control" id="toDate" />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <br />
+                        <button class="btn btn-success btn-sm" id="getReport">Submit</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="card mt-2">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table width="100%" border="0" cellspacing="0" cellpadding="0" id="tble" class="table table-bordered table-striped table-sm">
+                        <thead>
+                            <tr>
+                                <th width="10%">S. No.</th>
+                                <th style="display:none;"></th>
+                                <th>District</th>
+                                <th>Block</th>
+                                <th>Village</th>
+                                <th>School/ Anganwadi</th>
+                                <th>Survey Date</th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th>Work BOQ</th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th style="display:none;"></th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="survyData">
+                            @*<tr>
+                                    <td>1</td>
+                                    <td style="display:none;"></td>
+                                    <td>Chitrakoot</td>
+                                    <td>Chitrakoot</td>
+                                    <td>Chitrakoot</td>
+                                    <td>School name</td>
+                                    <td>date</td>
+                                    <td><a href="#"><i class="fa fa-pencil-alt text-primary"></i></a> &nbsp; <a href="#"><i class="fa fa-eye text-success"></i></a></td>
+                                </tr>*@
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+</div>
+<!-- The Modal -->
+<div class="modal" id="viewSurvey">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">View Survey</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <!-- Modal body -->
+            <div class="modal-body">
+                <div id="pdfReport" style="border:#808080 solid 1px; padding:5px;">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="text-center" style="font-size:22px;">
+                                <span id="School_Anganwadi">school</span> <span id="Village1"></span>
+                                <span id="scholaganwdi_id" style="display:none;"></span>
+                            </div>
+                            <table width="100%" border="0" cellspacing="0" cellpadding="0" id="aprovtbl" class="table table-bordered table-sm">
+                                <tbody id="menuTbody">
+                                    <tr>
+                                        <td width="50%">Village: <span id="Village"></span> </td>
+                                        <td>Block:  <span id="Block"></span> </td>
+                                    </tr>
+                                    <tr>
+                                        <td width="50%">District: <span id="District"></span> </td>
+                                        <td>Inspection Date: <span id="Survey_date"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Availability of Electricity: <span id="Electricity_Avail "></span></td>
+                                        <td>Availability HandPump: <span id="HP_Avail"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Availability of piped water before 100 days mission: <span id="PipeWater_Avail "></span></td>
+                                        <td>Implementation Agency: <span id="Implmnt_agency"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Name of piped water supply scheme: <span id="Supply_scheme "></span></td>
+                                        <td>Work done as per BOQ/Schedule of rate: <span id="Work_boq"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Providing fixing and Commissioning single phase 0.5 H.P. bore well submersible pump of with control panel, support wire, stator etc. complete in all respect.
+                                            <br />Work Completed: <span id="BoreWell1_WorkDone"></span>
+                                            <br />Workmanship Status: <span id="Providing_BoreWell1"></span>
+                                        </td>
+                                        <td class="text-center"><img src="" id="boreWell-pic" width="350" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            CPVC Pipes / Fittings used
+                                            <br />Work Completed: <span id="Cpvc_Pipe2_WorkDone"></span>
+                                        </td>
+                                        <td>Workmanship Status: <span id="Cpvc_Pipe2"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Providing and fixing C.P. brass longnose push type cock.
+                                            <br />Work Completed: <span id="BrassLong3_WorkDone"></span>
+                                        </td>
+                                        <td>Workmanship Status: <span id="Providing_BrassLongnose3"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Providing and fixing CPVC ball valve.
+                                            <br />Work Completed: <span id="CpvcBallValve4_WorkDone"></span>
+                                        </td>
+                                        <td>Workmanship: Status: <span id="Providing_Cpvc_BallValve4"></span></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Providing and placing on terrace (at all floor levels) polyethylene water storage tank with
+                                            cover and the base support for tank. Capacity 500 Ltr with ISI Mark and approved make.
+                                            <br />Work Completed: <span id="StorageTank5_WorkDone"></span>
+                                            <br />Workmanship Status: <span id="Providing_StorageTank5"></span>
+                                        </td>
+                                        <td class="text-center"><img src="" id="storageTank-pic" width="350" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Providing & Fixing attachment for joining submersible pump set and hand pump cylinder including supply of new connection rod as required, Head Pressure plat, G.I. Reducer and repairing of cylinder,
+                                            old connecting rods as required as per site condition with all cost of labour, material carriage to site & T & P required.
+                                            <br />Work Completed: <span id="HandPump6_WorkDone"></span>
+                                            <br />Workmanship Status: <span id="Providing_HandPump6"></span>
+                                        </td>
+                                        <td class="text-center"><img src="" id="handpump-pic" width="350" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">&nbsp;</td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            Overall Status of scheme: <span id="Overall_Scheme"></span>
+                                            <br /> Overall Remarks: <span id="Overall_remark"></span>
+                                        </td>
+                                        <td class="text-center"><img src="" id="overallStatus-pic" width="350" /></td>
+                                    </tr>
+                                    <tr>
+                                        <td>Survey apporve: <br /><span id="Survey_apporve"></span></td>
+                                        <td>Survey remark: <br /><span id="Survey_remark"></span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 text-center">
+                        <button class="btn btn-success" id="geratReport">Generate Report</button> &nbsp;
+                        <button class="btn btn-warning" data-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#aa-preloader-area").show();
+        $.ajax({
+            url: "@Url.Action("getDistrictList", "SchoolSurvey")",
+            method: 'post',
+            dataType: 'json',
+            data: '',
+            success: function (response) {
+                var ListValue = "";
+                ListValue += "<option value='0'>Please select</option>";
+                $("#DistrictList").empty();
+                for (i = 0; i < response.length; ++i) {
+                    ListValue += "<option value=" + response[i].District_id + ">" + response[i].District_name + "</option>";
+                }
+                $("#aa-preloader-area").hide();
+                $("#DistrictList").append(ListValue);
+            }
+        });
+    });
+    function blocklist() {
+        if (dl == null) { var dl = $("#DistrictList").val(); }
+        var Data = { District_id: dl }
+        $("#aa-preloader-area").show();
+        $.ajax({
+            url: "@Url.Action("getBlockList", "Master")",
+            method: 'post',
+            dataType: 'json',
+            data: Data,
+            success: function (response) {
+                var ListValue = "";
+                ListValue += "<option value='0'>Please select</option>";
+                $("#BlockList").empty();
+                for (i = 0; i < response.length; ++i) {
+                    ListValue += "<option value=" + response[i].Block_id + ">" + response[i].Block_name + "</option>";
+                }
+                $("#aa-preloader-area").hide();
+                $("#BlockList").append(ListValue);
+            }
+        });
+    };
+    function villagelist() {
+        if (Bl == null) { var Bl = $("#BlockList").val(); }
+        var Data = { Block_id: Bl };
+        $("#aa-preloader-area").show();
+        $.ajax({
+            url: "@Url.Action("getVillagetList", "SchoolSurvey")",
+            method: 'post',
+            dataType: 'json',
+            data: Data,
+            success: function (response) {
+                var ListValue = "";
+                ListValue += "<option value='0'>Please select</option>";
+                $("#VillageList").empty();
+                for (i = 0; i < response.length; ++i) {
+                    ListValue += "<option value=" + response[i].Village_id + ">" + response[i].Village_name + "</option>";
+                }
+                $("#aa-preloader-area").hide();
+                $("#VillageList").append(ListValue);
+            }
+        });
+    };
+</script>
+<script>
+    $("#getReport").on("click", function () {        
+        var res = validate();
+        if (res == false) {
+            return false;
+        };
+        $("#aa-preloader-area").show();
+        var dTable = $('#tble').DataTable();
+        dTable.draw().clear();
+        dTable.destroy();
+        debugger;
+        Data = {
+            District_id: $("#DistrictList").val(),
+            Block_id: $("#BlockList").val(),
+            Village_id: $("#VillageList").val(),
+            fromDate: $("#fromDate").val(),
+            toDate: $("#toDate").val()
+        }
+        $.ajax({
+            async: false,
+            type: 'Post',
+            url: "@Url.Action("getSurveyReports", "SchoolSurvey")",
+            dataType: 'json',
+            data: Data,
+            success: function (response) {
+                debugger;
+                console.log(response);
+                var html = '';
+                var sr = 1;
+                $("#survyData").empty();
+                $.each(response, function (key, item) {
+                    html += '<tr>';
+                    html += '<td>' + sr + '</td>';
+                    html += '<td style="display:none;">' + item.Ssurvey_id + '</td>';
+                    html += '<td>' + item.District_name + '</td>';
+                    html += '<td>' + item.Block_name + '</td>';
+                    html += '<td>' + item.Village_name + '</td>';
+                    if (item.School_id != 0) {
+                        html += '<td>' + item.School_name + '</td>';
+                    } else { html += '<td>' + item.Anganwadi_name + '</td>'; }
+                    var survydt = item.dateOfInstallation.substring(0, 10);
+                    html += '<td>' + survydt + '</td>';
+                    html += '<td style="display:none;">' + item.Electricity_Avail + '</td>';
+                    html += '<td style="display:none;">' + item.HP_Avail + '</td>';
+                    html += '<td style="display:none;">' + item.PipeWater_Avail + '</td>';
+                    html += '<td style="display:none;">' + item.Implmnt_agency + '</td>';
+                    html += '<td style="display:none;">' + item.Supply_scheme + '</td>';
+                    html += '<td>' + item.Work_boq + '</td>';
+                    html += '<td style="display:none;">' + item.BoreWell1_WorkDone + '</td>';
+                    html += '<td style="display:none;">' + item.Providing_BoreWell1 + '</td>';
+                    html += '<td style="display:none;">' + item.Cpvc_Pipe2_WorkDone + '</td>';
+                    html += '<td style="display:none;">' + item.Cpvc_Pipe2 + '</td>';
+                    html += '<td style="display:none;">' + item.BrassLong3_WorkDone + '</td>';
+                    html += '<td style="display:none;">' + item.Providing_BrassLongnose3 + '</td>';
+                    html += '<td style="display:none;">' + item.CpvcBallValve4_WorkDone + '</td>';
+                    html += '<td style="display:none;">' + item.Providing_Cpvc_BallValve4 + '</td>';
+                    html += '<td style="display:none;">' + item.StorageTank5_WorkDone + '</td>';
+                    html += '<td style="display:none;">' + item.Providing_StorageTank5 + '</td>';
+                    html += '<td style="display:none;">' + item.HandPump6_WorkDone + '</td>';
+                    html += '<td style="display:none;">' + item.Providing_HandPump6 + '</td>';
+                    html += '<td style="display:none;">' + item.photo_boreWell + '</td>';
+                    html += '<td style="display:none;">' + item.photo_handPump + '</td>';
+                    html += '<td style="display:none;">' + item.photo_storageTank + '</td>';
+                    html += '<td style="display:none;">' + item.photo_overallStatus + '</td>';
+                    if (item.School_id != 0) {
+                        html += '<td style="display:none;">' + item.School_id + '</td>';
+                    } else { html += '<td style="display:none;">' + item.anganwadi_ID + '</td>'; }
+                    html += '<td style="display:none;">' + item.Overall_Scheme + '</td>';
+                    html += '<td style="display:none;">' + item.Overall_remark + '</td>';
+                    html += '<td style="display:none;">' + item.Survey_apporve + '</td>';
+                    html += '<td style="display:none;">' + item.Survey_remark + '</td>';
+                    html += '<td><a href="#" class="Viewbtn" title="View Survey"><i class="fa fa-eye text-success"></i>&nbsp;View</a> </td>';
+                    html += '</tr>';
+                    sr++;
+                });
+                $("#survyData").html(html);
+                $('#tble').DataTable({
+                    "paging": true,
+                    "lengthChange": true,
+                    "searching": true,
+                    "ordering": true,
+                });
+                $("#aa-preloader-area").hide();
+            }
+        });
+    });
+</script>
+<script>
+    $('#tble').on('click', '.Viewbtn', function () {
+        debugger;
+        var row = $(this).closest('tr');
+        var Survey_id = row.find('td').eq('1').text();
+        var District = row.find('td').eq('2').text();
+        var Block = row.find('td').eq('3').text();
+        var Village = row.find('td').eq('4').text();
+        var School_Anganwadi = row.find('td').eq('5').text();
+        var Survey_date = row.find('td').eq('6').text();
+        var Electricity_Avail = row.find('td').eq('7').text();
+        var HP_Avail = row.find('td').eq('8').text();
+        var PipeWater_Avail = row.find('td').eq('9').text();
+        var Implmnt_agency = row.find('td').eq('10').text();
+        var Supply_scheme = row.find('td').eq('11').text();
+        var Work_boq = row.find('td').eq('12').text();
+        var BoreWell1_WorkDone = row.find('td').eq('13').text();
+        var Providing_BoreWell1 = row.find('td').eq('14').text();
+        var Cpvc_Pipe2_WorkDone = row.find('td').eq('15').text();
+        var Cpvc_Pipe2 = row.find('td').eq('16').text();
+        var BrassLong3_WorkDone = row.find('td').eq('17').text();
+        var Providing_BrassLongnose3 = row.find('td').eq('18').text();
+        var CpvcBallValve4_WorkDone = row.find('td').eq('19').text();
+        var Providing_Cpvc_BallValve4 = row.find('td').eq('20').text();
+        var StorageTank5_WorkDone = row.find('td').eq('21').text();
+        var Providing_StorageTank5 = row.find('td').eq('22').text();
+        var HandPump6_WorkDone = row.find('td').eq('23').text();
+        var Providing_HandPump6 = row.find('td').eq('24').text();
+        var photo_boreWell = row.find('td').eq('25').html();
+        var photo_handPump = row.find('td').eq('26').text();
+        var photo_storageTank = row.find('td').eq('27').text();
+        var photo_overallStatus = row.find('td').eq('28').text();
+        var scholaganwdi_id = row.find('td').eq('29').text();
+        var Overall_Scheme = row.find('td').eq('30').text();
+        var Overall_remark = row.find('td').eq('31').text();
+        var Survey_apporve = row.find('td').eq('32').text();
+        var Survey_remark = row.find('td').eq('33').text();
+
+        $("#Survey_id").text(Survey_id);
+        $("#District").text(District);
+        $("#Block").text(Block);
+        $("#Village").text(Village);
+        $("#Village1").text(Village);
+        $("#School_Anganwadi").text(School_Anganwadi);
+        $("#Survey_date").text(Survey_date);
+        $("#Electricity_Avail").text(Electricity_Avail);
+        $("#HP_Avail").text(HP_Avail);
+        $("#PipeWater_Avail").text(PipeWater_Avail);
+        $("#Implmnt_agency").text(Implmnt_agency);
+        $("#Supply_scheme").text(Supply_scheme);
+        $("#Work_boq").text(Work_boq);
+        $("#BoreWell1_WorkDone").text(BoreWell1_WorkDone);
+        $("#Providing_BoreWell1").text(Providing_BoreWell1);
+        $("#Cpvc_Pipe2_WorkDone").text(Cpvc_Pipe2_WorkDone);
+        $("#Cpvc_Pipe2").text(Cpvc_Pipe2);
+        $("#BrassLong3_WorkDone").text(BrassLong3_WorkDone);
+        $("#Providing_BrassLongnose3").text(Providing_BrassLongnose3);
+        $("#CpvcBallValve4_WorkDone").text(CpvcBallValve4_WorkDone);
+        $("#Providing_Cpvc_BallValve4").text(Providing_Cpvc_BallValve4);
+        $("#StorageTank5_WorkDone").text(StorageTank5_WorkDone);
+        $("#Providing_StorageTank5").text(Providing_StorageTank5);
+        $("#HandPump6_WorkDone").text(HandPump6_WorkDone);
+        $("#Providing_HandPump6").text(Providing_HandPump6);
+        $("#Survey_apporve").text(Survey_apporve);
+        $("#Survey_remark").text(Survey_remark);
+        $("#Overall_Scheme").text(Overall_Scheme);
+        $("#Overall_remark").text(Overall_remark);
+        $("#scholaganwdi_id").text(scholaganwdi_id);
+        document.getElementById("boreWell-pic").src = "/swsm/Photos/" + photo_boreWell;
+        document.getElementById("handpump-pic").src = "/swsm/Photos/" + photo_handPump;
+        document.getElementById("storageTank-pic").src = "/swsm/Photos/" + photo_storageTank;
+        document.getElementById("overallStatus-pic").src = "/swsm/Photos/" + photo_overallStatus;
+        $("#viewSurvey").modal('show');
+    });
+</script>
+<script>
+    ///validations
+    function validate() {
+        if ($('#DistrictList').val() == "0") {
+            alert('Please select District!');
+            $('#DistrictList').focus();
+            $('#DistrictList').css('border-color', 'red');
+            isValid = false;
+            return false;
+        } else { $('#DistrictList').css('border-color', ''); }
+    }
+</script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
+<script type="text/javascript" src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+<script>
+    function getPDF() {
+        var HTML_Width = $("#ReprtTble").width();
+        var HTML_Height = $("#ReprtTble").height();
+        var top_left_margin = 15;
+        var PDF_Width = HTML_Width + (top_left_margin * 2);
+        var PDF_Height = (PDF_Width * 1.5) + (top_left_margin * 2);
+        var canvas_image_width = HTML_Width;
+        var canvas_image_height = HTML_Height;
+
+        var totalPDFPages = Math.ceil(HTML_Height / PDF_Height) - 1;
+
+        html2canvas($("#ReprtTble")[0], { allowTaint: true }).then(function (canvas) {
+            canvas.getContext('2d');
+            console.log(canvas.height + "  " + canvas.width);
+
+            var imgData = canvas.toDataURL("image/jpeg", 1.0);
+            var pdf = new jsPDF('p', 'pt', [PDF_Width, PDF_Height]);
+            pdf.addImage(imgData, 'JPG', top_left_margin, top_left_margin, canvas_image_width, canvas_image_height);
+
+            for (var i = 1; i <= totalPDFPages; i++) {
+                pdf.addPage(PDF_Width, PDF_Height);
+                pdf.addImage(imgData, 'JPG', top_left_margin, -(PDF_Height * i) + (top_left_margin * 4), canvas_image_width, canvas_image_height);
+            }
+
+            pdf.save("Report" + $("#School_Anganwadi").text() + ".pdf");
+        });
+    };
+
+    @*const printDocument = () => {
+        const input = document.getElementById('pdfReport');
+        const divHeight = input.clientHeight
+        const divWidth = input.clientWidth
+        const ratio = divHeight / divWidth;
+
+        html2canvas(input, { scale: '0.75' }).then((canvas) => {
+            const imgData = canvas.toDataURL('image/jpeg');
+            const pdfDOC = new jsPDF("l", "mm", "a4"); //  use a4 for smaller page
+
+            const width = pdfDOC.internal.pageSize.getWidth();
+            let height = pdfDOC.internal.pageSize.getHeight();
+            height = ratio * width;
+
+            pdfDOC.addImage(imgData, 'JPEG', 0, 0, width - 20, height - 10);
+            pdfDOC.save('Report'+ $("#filenam").text() +'.pdf');   //Download the rendered PDF.
+        });
+    }*@
+</script>
+<script>
+    $(document).on("click", "#geratReport", function () {
+        var HTML_Width = $("#pdfReport").width();
+        var HTML_Height = $("#pdfReport").height();
+        var top_left_margin = 15;
+        var PDF_Width = HTML_Width + (top_left_margin * 2);
+        var PDF_Height = (PDF_Width * 1.5) + (top_left_margin * 2);
+        var canvas_image_width = HTML_Width;
+        var canvas_image_height = HTML_Height;
+
+        var totalPDFPages = Math.ceil(HTML_Height / PDF_Height) - 1;
+
+        html2canvas($("#pdfReport")[0], { allowTaint: true }).then(function (canvas) {
+            canvas.getContext('2d');
+            console.log(canvas.height + "  " + canvas.width);
+
+            var imgData = canvas.toDataURL("image/jpeg", 1.0);
+            var pdf = new jsPDF('p', 'pt', [PDF_Width, PDF_Height]);
+            pdf.addImage(imgData, 'JPG', top_left_margin, top_left_margin, canvas_image_width, canvas_image_height);
+
+            for (var i = 1; i <= totalPDFPages; i++) {
+                pdf.addPage(PDF_Width, PDF_Height);
+                pdf.addImage(imgData, 'JPG', top_left_margin, -(PDF_Height * i) + (top_left_margin * 4), canvas_image_width, canvas_image_height);
+            }
+
+            pdf.save("Report" + $("#School_Anganwadi").text() + ".pdf");
+        });
+
+    });
+</script>
+
+
